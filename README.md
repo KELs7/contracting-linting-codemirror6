@@ -10,4 +10,3 @@ By default runs at http://localhost:5173/
 
 ## NB
 Only few linting rules have been implemented
-# contracting-linting-codemirror6
