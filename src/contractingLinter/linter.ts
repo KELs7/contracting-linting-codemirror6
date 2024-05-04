@@ -9,7 +9,7 @@ export const contractingLinter = linter(view => {
   ensureSyntaxTree(view.state, view.state.doc.length).cursor().iterate(node => {
     if (node.name === "VariableName"){
         const sliceString = view.state.doc.sliceString(node.from, node.to);
-
+        // check for the use of "rt"
         if (sliceString === "rt"){
             diagnostics.push({
                 from: node.from,
@@ -22,6 +22,7 @@ export const contractingLinter = linter(view => {
                 }]
             })
         }
+        // check for illegal builtins
         if (illegalBuiltins.has(sliceString) && sliceString !== "float"){
             diagnostics.push({
                 from: node.from,
@@ -36,6 +37,7 @@ export const contractingLinter = linter(view => {
         }
     
     }
+    // check of the use of x.rt
     if (node.name === "PropertyName" && view.state.doc.sliceString(node.from, node.to) === "rt"){
         diagnostics.push({
             from: node.from,
@@ -48,6 +50,7 @@ export const contractingLinter = linter(view => {
             }]
         })
     }
+    // check for class definition
     if(node.name === "ClassDefinition"){
         diagnostics.push({
             from: node.from,
@@ -60,6 +63,7 @@ export const contractingLinter = linter(view => {
             }]
         }) 
     }
+    // check for async functions
     if(node.name === "async"){
         diagnostics.push({
             from: node.from,
