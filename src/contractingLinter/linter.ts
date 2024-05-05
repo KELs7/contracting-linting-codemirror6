@@ -1,6 +1,7 @@
 import { ensureSyntaxTree } from "@codemirror/language"
 import { linter,  lintGutter, Diagnostic } from "@codemirror/lint"
 import { illegalBuiltins, lintMessages } from "./whitelists";
+import {  ORM_CLASS_NAMES  } from "./config";
 
 export const lGutter = lintGutter;
 
@@ -35,9 +36,24 @@ export const contractingLinter = linter(view => {
                 }]
             })
         }
-    
+        // check for x = Hash, x = Variable, x = ForeignHash, x = ForeignVariable
+        if (
+            node.node._parent.name === "AssignStatement" && 
+                ORM_CLASS_NAMES.has(sliceString)
+        ){
+            diagnostics.push({
+                from: node.from,
+                to: node.to,
+                severity: "warning",
+                message: lintMessages[13],
+                actions: [{
+                    name: "Remove",
+                    apply(view, from, to) { view.dispatch({changes: {from, to}}) }
+                }]
+            })
+        }
     }
-    // check of the use of x.rt
+    // check for the use of x.rt
     if (node.name === "PropertyName" && view.state.doc.sliceString(node.from, node.to) === "rt"){
         diagnostics.push({
             from: node.from,
