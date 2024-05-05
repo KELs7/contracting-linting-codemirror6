@@ -2,6 +2,7 @@
 
 ## Run
 ```
+git clone https://github.com/KELs7/contracting-linting-codemirror6.git
 npm install
 npm run dev
 ```
