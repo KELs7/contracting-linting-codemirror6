@@ -9,7 +9,7 @@ export const contractingLinter = linter(view => {
   let diagnostics: Diagnostic[] = [];
   ensureSyntaxTree(view.state, view.state.doc.length).cursor().iterate(node => {
     if (node.name === "VariableName"){
-        const sliceString = view.state.doc.sliceString(node.from, node.to);
+        let sliceString = view.state.doc.sliceString(node.from, node.to);
         // check for the use of "rt"
         if (sliceString === "rt"){
             diagnostics.push({
@@ -52,6 +52,31 @@ export const contractingLinter = linter(view => {
                 }]
             })
         }
+        // check for "contract" and "name" parameter names in Hash, Variable, ForeignHash, ForeignVariable
+        if(
+          node.node._parent.name === "CallExpression" &&
+            ORM_CLASS_NAMES.has(sliceString) 
+        ){
+          node.node.cursor().iterate(node=>{
+            sliceString = view.state.doc.sliceString(node.from, node.to);
+
+            if(
+              node.node._parent.name === "ArgList" && 
+                (sliceString === "contract" || sliceString === "name")
+            ){
+              diagnostics.push({
+                from: node.from,
+                to: node.to,
+                severity: "warning",
+                message: lintMessages[10],
+                actions: [{
+                  name: "Remove",
+                  apply(view, from, to) { view.dispatch({changes: {from, to}}) }
+                }]
+              })
+            }
+          })
+        }
     }
     // check for the use of x.rt
     if (node.name === "PropertyName" && view.state.doc.sliceString(node.from, node.to) === "rt"){
@@ -92,6 +117,8 @@ export const contractingLinter = linter(view => {
             }]
         }) 
     }
+    
+    
   })
   
   return diagnostics;
